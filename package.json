@@ -1,0 +1,25 @@
+{
+  "name": "chatserver",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "backpack",
+    "start": "node ./bin/www",
+    "deploy": "scp -r /Users/sevcik/IdeaProjects/keycloak-quickstarts/chatServer/* root@handsomeio.com:/var/www/html/chat/"
+  },
+  "dependencies": {
+    "backpack-core": "^0.7.0",
+    "backpack-node": "^0.4.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "~1.18.2",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "express": "~4.15.5",
+    "jade": "~1.11.0",
+    "jsonwebtoken": "^8.2.1",
+    "mongoose": "^5.0.17",
+    "morgan": "~1.9.0",
+    "serve-favicon": "~2.4.5",
+    "socket.io": "^2.1.0"
+  }
+}
