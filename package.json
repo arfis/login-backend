@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "backpack",
-    "start": "node ./bin/www",
+    "start": "backpack",
     "deploy": "scp -r /Users/sevcik/IdeaProjects/keycloak-quickstarts/chatServer/* root@handsomeio.com:/var/www/html/chat/"
   },
   "dependencies": {
@@ -13,6 +13,7 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "~1.18.2",
     "cookie-parser": "~1.4.3",
+    "cors": "^2.8.4",
     "debug": "~2.6.9",
     "express": "~4.15.5",
     "jade": "~1.11.0",

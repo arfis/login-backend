@@ -1,4 +1,4 @@
-require('source-map-support/register')
+require('/usr/local/lib/node_modules/backpack-core/node_modules/source-map-support/register.js')
 module.exports =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -110,7 +110,7 @@ module.exports = __webpack_require__(5);
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(__dirname) {var _this = this;
+var _this = this;
 
 var express = __webpack_require__(0);
 var path = __webpack_require__(6);
@@ -119,25 +119,40 @@ var logger = __webpack_require__(8);
 var cookieParser = __webpack_require__(9);
 var bodyParser = __webpack_require__(1);
 
-var index = __webpack_require__(10);
-var users = __webpack_require__(11);
+var fs = __webpack_require__(10);
+
+var index = __webpack_require__(11);
+var users = __webpack_require__(12);
 
 var app = express();
 
-var http = __webpack_require__(12).Server(app);
-var io = __webpack_require__(13)(http);
+var options = {
+    key: fs.readFileSync('/etc/letsencrypt/live/handsomeio.com/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/handsomeio.com/cert.pem')
+};
 
-var db = __webpack_require__(14);
-var UserController = __webpack_require__(15);
-var AuthController = __webpack_require__(16);
+// var http = require('http').Server(app);
+var https = __webpack_require__(13);
+var io = __webpack_require__(14)(https, { origins: '*:*', transport: ['websocket'] });
+io.set('origins', '*:*');
+
+const cors = __webpack_require__(15);
+
+var db = __webpack_require__(16);
+var UserController = __webpack_require__(17);
+var AuthController = __webpack_require__(18);
 
 let activeUsers = new Array();
+
+app.use(cors());
+app.options('*', cors());
 
 app.use('/api/auth', AuthController);
 app.use('/users', UserController);
 
+app.use(express.static('client'));
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/routes/chat.html');
+    //res.sendFile("chat.html", { root: path.join(__dirname, 'routes') })
 });
 
 io.on('connection', socket => {
@@ -173,12 +188,16 @@ io.on('connection', socket => {
     });
 });
 
-http.listen(3001, function () {
-    console.log('listening on *:3001');
+server = https.createServer(options, app).listen(443, function () {
+    console.log('listning on port 443');
 });
+io = io.listen(server);
+//http.listen(443, function(){
+//   console.log('listening on *:3001');
+//});
+
 
 module.exports = app;
-/* WEBPACK VAR INJECTION */}.call(exports, "src"))
 
 /***/ }),
 /* 6 */
@@ -206,6 +225,12 @@ module.exports = require("cookie-parser");
 
 /***/ }),
 /* 10 */
+/***/ (function(module, exports) {
+
+module.exports = require("fs");
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var express = __webpack_require__(0);
@@ -215,7 +240,7 @@ var router = express.Router();
 module.exports = router;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var express = __webpack_require__(0);
@@ -229,19 +254,25 @@ router.get('/', function (req, res, next) {
 module.exports = router;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
-module.exports = require("http");
+module.exports = require("https");
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 module.exports = require("socket.io");
 
 /***/ }),
-/* 14 */
+/* 15 */
+/***/ (function(module, exports) {
+
+module.exports = require("cors");
+
+/***/ }),
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -249,7 +280,7 @@ var mongoose = __webpack_require__(2);
 mongoose.connect('mongodb://localhost:27017/medical-chat');
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var express = __webpack_require__(0);
@@ -308,7 +339,7 @@ router.put('/:id', function (req, res) {
 module.exports = router;
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -321,9 +352,9 @@ router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 var User = __webpack_require__(3);
 
-var jwt = __webpack_require__(17);
-var bcrypt = __webpack_require__(18);
-var config = __webpack_require__(19);
+var jwt = __webpack_require__(19);
+var bcrypt = __webpack_require__(20);
+var config = __webpack_require__(21);
 
 router.post('/login', function (req, res) {
     User.findOne({ email: req.body.email }, function (err, person) {
@@ -382,19 +413,19 @@ router.get('/me', function (req, res) {
 module.exports = router;
 
 /***/ }),
-/* 17 */
+/* 19 */
 /***/ (function(module, exports) {
 
 module.exports = require("jsonwebtoken");
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = require("bcryptjs");
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, exports) {
 
 module.exports = {

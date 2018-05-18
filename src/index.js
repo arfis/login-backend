@@ -5,13 +5,24 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var fs = require('fs');
+
 var index = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
 
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var options = {
+    key: fs.readFileSync('/etc/letsencrypt/live/handsomeio.com/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/handsomeio.com/cert.pem'),
+};
+
+// var http = require('http').Server(app);
+var https = require('https');
+var io = require('socket.io')(https,{ origins: '*:*', transport: ['websocket']});
+io.set('origins', '*:*');
+
+const cors = require('cors');
 
 var db = require('./db/db');
 var UserController = require('./user/UserController');
@@ -19,13 +30,18 @@ var AuthController = require('./auth/AuthController');
 
 let activeUsers = new Array();
 
+app.use(cors());
+app.options('*', cors());
+
 app.use('/api/auth', AuthController);
 app.use('/users', UserController);
 
-app.get('/', function(req, res){
-    res.sendFile(__dirname + '/routes/chat.html');
-});
 
+
+app.use(express.static('client'));
+app.get('/', function(req, res) {
+//res.sendFile("chat.html", { root: path.join(__dirname, 'routes') })
+});
 
 io.on('connection', (socket) => {
     const token = socket.handshake.query.token;
@@ -60,9 +76,13 @@ io.on('connection', (socket) => {
     });
 });
 
-http.listen(3001, function(){
-    console.log('listening on *:3001');
+server = https.createServer(options, app).listen(443, function() {
+	console.log('listning on port 443');
 });
+io = io.listen(server);
+//http.listen(443, function(){
+ //   console.log('listening on *:3001');
+//});
 
 
 module.exports = app;
